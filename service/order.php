@@ -5,7 +5,7 @@ class Order {
     private int $id;
     private int $place_id;
     private ?int $assigned;
-    private array $acts = [NULL, NULL];
+    private ?array $acts;
     private int $created;
     private ?int $completed;
     private int $status;
@@ -18,7 +18,7 @@ class Order {
         $this->id = $id;
         $this->place_id = $res['place_id'];
         $this->assigned = $res['assigned'];
-        $this->acts = [$res['act1_id'], $res['act2_id']];
+        $this->acts = explode(",", $res['act_ids']);
         $this->created = strtotime($res['created']);
         $this->completed = (is_null($res['completed'])) ? NULL : strtotime($res['completed']);
         $this->status = $res['status'];
@@ -45,12 +45,12 @@ class Order {
         }
     }
     public function getAct(int $act): ?int {
-        if ($act < 0 || $act > 1) throw new InvalidArgumentException("Act is out of bounds!");
+        if ($act < 0 || $act > count($this->acts)) throw new InvalidArgumentException("Act is out of bounds!");
         return $this->acts[$act];
     }
     public function setAct(int $act, int $id): void {
         global $sql;
-        if ($act < 0 || $act > 1) throw new InvalidArgumentException("Act is out of bounds!");
+        if ($act < 0 || $act > count($this->acts)) throw new InvalidArgumentException("Act is out of bounds!");
         $sql->query("UPDATE orders SET act{$act}_id = '$id' WHERE order_id = '$this->id'");
         $this->acts[$act] = $id;
     }
