@@ -1,11 +1,12 @@
 <?php
 require_once '../bot/api.php';
+require_once 'order.php';
 class UserNotFoundException extends Exception {}
 class User {
     private int $id;
     private int $user_id;
     private int $access;
-    private ?int $active_order;
+    private ?Order $active_order;
     private ?int $active_status;
 
     function __construct(int $id, bool $createuser = false, ?int $phone_number = NULL) {
