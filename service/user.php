@@ -73,7 +73,7 @@ class User {
         }
     }
 
-    public function getActiveOrder(): int|null {
+    public function getActiveOrder(): Order|null {
         return $this->active_order;
     }
 
