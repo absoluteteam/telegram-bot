@@ -23,7 +23,7 @@ class API {
      * @param string $method Telegram API method that will be called
      * @param array|false $params Parameters for desired API method. If false, empty array will be passed.
      */
-    private function issueWebhookAnswer(string $method, array|false $params = false): void {
+    private static function issueWebhookAnswer(string $method, array|false $params = false): void {
         if ($params === false) {
             $params = array();
         }
@@ -40,7 +40,7 @@ class API {
      * @throws InvalidArgumentException In case invalid Telegram API token provided
      * @throws TelegramException In case request fails for non-cURL related reasons
      */
-    private function curlExec(CurlHandle $handle): mixed {
+    private static function curlExec(CurlHandle $handle): mixed {
         $response = curl_exec($handle);
 
         if ($response === false) { // cURL request failed
@@ -55,7 +55,7 @@ class API {
 
         if ($http_code >= 500) { // do not want to DDOS server if something goes wrong
             sleep(10);
-            return $this->curlExec($handle); // Try executing request again
+            return self::curlExec($handle); // Try executing request again
         } elseif ($http_code != 200) { // If request was not successful
             $response = json_decode($response, true);
             if ($http_code == 401) {
@@ -78,7 +78,7 @@ class API {
      * @throws TelegramException In case request fails for non-cURL related reasons
      * @throws Exception In case cURL request failed
      */
-    public function executeMethod(string $method, array|false $params = false): mixed {
+    public static function executeMethod(string $method, array|false $params = false): mixed {
         if ($params === false) {
             $params = array();
         }
@@ -96,7 +96,7 @@ class API {
         curl_setopt($handle, CURLOPT_TIMEOUT, 60);
 
         try {
-            return $this->curlExec($handle);
+            return self::curlExec($handle);
         } catch (TelegramException $e) {
             throw new TelegramException($e->getMessage(), $e->getCode(), $e);
         } catch (Exception $e) {
@@ -112,7 +112,7 @@ class API {
      * @throws TelegramException In case request fails for non-cURL related reasons
      * @throws Exception In case cURL request failed
      */
-    public function executeMethodJSON(string $method, array|false $parameters = false): mixed {
+    public static function executeMethodJSON(string $method, array|false $parameters = false): mixed {
         if ($parameters === false) {
             $parameters = array();
         }
@@ -128,7 +128,7 @@ class API {
         curl_setopt($handle, CURLOPT_HTTPHEADER, array("Content-Type: application/json"));
 
         try {
-            return $this->curlExec($handle);
+            return self::curlExec($handle);
         } catch (TelegramException $e) {
             throw new TelegramException($e->getMessage(), $e->getCode(), $e);
         } catch (Exception $e) {
@@ -144,18 +144,18 @@ class API {
      * @throws TelegramException In case request fails for non-cURL related reasons
      * @throws Exception In case cURL request failed
      */
-    private function methodExecutor(string $method, array|false $array = false, int $executor = 0): void {
+    private static function methodExecutor(string $method, array|false $array = false, int $executor = 0): void {
         if ($array === false) $array = array();
         try {
             switch ($executor) {
                 case 0: default:
-                    $this->issueWebhookAnswer($method, $array);
+                    self::issueWebhookAnswer($method, $array);
                     break;
                 case 1:
-                    $this->executeMethodJSON($method, $array);
+                    self::executeMethodJSON($method, $array);
                     break;
                 case 2:
-                    $this->executeMethod($method, $array);
+                    self::executeMethod($method, $array);
                     break;
             }
         } catch (TelegramException $e) {
@@ -174,12 +174,12 @@ class API {
      * @throws TelegramException In case request fails for non-cURL related reasons
      * @throws Exception In case cURL request failed
      */
-    public function sendMessage(int|string $chat, string $msg, int $type = 0): void {
+    public static function sendMessage(int|string $chat, string $msg, int $type = 0): void {
         if (empty($msg)) {
             throw new InvalidArgumentException("You are trying to send blank message!");
         }
         try {
-            $this->methodExecutor("sendMessage", array('chat_id' => $chat, "text" => $msg), $type);
+            self::methodExecutor("sendMessage", array('chat_id' => $chat, "text" => $msg), $type);
         } catch (TelegramException $e) {
             throw new TelegramException($e->getMessage(), $e->getCode(), $e);
         } catch (Exception $e) {
@@ -197,14 +197,14 @@ class API {
      * @throws TelegramException In case request fails for non-cURL related reasons
      * @throws Exception In case cURL request failed
      */
-    public function sendKeyboardedMessage(int|string $chat, string $msg, string $kb, int $type = 0): void {
+    public static function sendKeyboardedMessage(int|string $chat, string $msg, string $kb, int $type = 0): void {
         if (empty($msg)) {
             throw new InvalidArgumentException("You are trying to send blank message!");
         } elseif (empty($kb)) {
             throw new InvalidArgumentException("You are trying to send empty keyboard");
         }
         try {
-            $this->methodExecutor("sendMessage", array('chat_id' => $chat, "text" => $msg, "reply_markup" => $kb), $type);
+            self::methodExecutor("sendMessage", array('chat_id' => $chat, "text" => $msg, "reply_markup" => $kb), $type);
         } catch (TelegramException $e) {
             throw new TelegramException($e->getMessage(), $e->getCode(), $e);
         } catch (Exception $e) {
@@ -223,14 +223,14 @@ class API {
      * @throws TelegramException In case request fails for non-cURL related reasons
      * @throws Exception In case cURL request failed
      */
-    public function editInlineMessage(int $editid, int|string $chatid, string $msg, string $kb, int $type = 0): void {
+    public static function editInlineMessage(int $editid, int|string $chatid, string $msg, string $kb, int $type = 0): void {
         if (empty($msg)) {
             throw new InvalidArgumentException("You are trying to send blank message!");
         } elseif (empty($kb)) {
             throw new InvalidArgumentException("You are trying to send empty keyboard!");
         }
         try {
-            $this->methodExecutor("editMessageText", array('chat_id' => $chatid, 'message_id' => $editid, "text" => $msg, "reply_markup" => $kb), $type);
+            self::methodExecutor("editMessageText", array('chat_id' => $chatid, 'message_id' => $editid, "text" => $msg, "reply_markup" => $kb), $type);
         } catch (TelegramException $e) {
             throw new TelegramException($e->getMessage(), $e->getCode(), $e);
         } catch (Exception $e) {
