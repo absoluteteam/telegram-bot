@@ -247,6 +247,23 @@ class API {
             throw new Exception($e->getMessage(), $e->getCode(), $e);
         }
     }
+
+    public static function getFile(string $file_id): mixed {
+        if (empty($file_id)) throw new InvalidArgumentException("Empty file id!");
+        try {
+            return self::executeMethod("getFile", array('file_id' => $file_id));
+        } catch (TelegramException $e) {
+            throw new TelegramException($e->getMessage(), $e->getCode(), $e);
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage(), $e->getCode(), $e);
+        }
+    }
+
+    public static function downloadFile(string $file_path) {
+        $link = "https://api.telegram.org/file/bot".self::TOKEN."/".$file_path;
+        $file = file_get_contents($link);
+        return $file;
+    }
 }
 
 /**
