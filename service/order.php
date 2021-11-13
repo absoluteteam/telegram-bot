@@ -9,6 +9,7 @@ class Order {
     private int $created;
     private ?int $completed;
     private int $status;
+    private array $addresses;
 
     function __construct(int $id) {
         global $sql;
@@ -22,6 +23,13 @@ class Order {
         $this->created = strtotime($res['created']);
         $this->completed = (is_null($res['completed'])) ? NULL : strtotime($res['completed']);
         $this->status = $res['status'];
+        $addr = $res['addresses'];
+        $addrsplit = explode(";", $addr);
+        $re = array();
+        foreach ($addrsplit as $dataset) {
+            $re[] = explode(",", $dataset);
+        }
+        $this->addresses = $re;
     }
     public function getID(): int {
         return $this->id;
@@ -73,5 +81,8 @@ class Order {
         global $sql;
         $sql->query("UPDATE orders SET status = '$status' WHERE order_id = '$this->id'");
         $this->status = $status;
+    }
+    public function getAddresses(): array {
+        return $this->addresses;
     }
 }
