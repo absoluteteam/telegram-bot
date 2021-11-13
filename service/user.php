@@ -41,8 +41,9 @@ class User {
         return $this->access;
     }
 
-    public function sendNotification(string $text): void {
+    public function sendNotification(string $text, float $lat, float $lon): void {
         API::sendMessage($this->id, $text, 1);
+        API::sendLocation($this->id, $lat, $lon);
     }
 
     public function setOrderStatus(int $status): void {
