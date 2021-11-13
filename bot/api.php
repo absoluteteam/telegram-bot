@@ -275,6 +275,11 @@ class Message
     private ?object $contact;
 
     /**
+     * @var array|null Object that represents image sent to the bot
+     */
+    private ?array $image;
+
+    /**
      * Constructs Message
      * @param object $msg Message object from Telegram callback API
      * @throws InvalidArgumentException If chat argument is absent in object
@@ -286,6 +291,7 @@ class Message
         $this->uid = $msg->from->id;
         $this->text = $msg->text ?? NULL;
         $this->contact = $msg->contact ?? NULL;
+        $this->image = $msg->photo ?? NULL;
     }
 
     /**
@@ -326,5 +332,13 @@ class Message
      */
     public function getContact(): ?object {
         return $this->contact;
+    }
+
+    /**
+     * Get object of image that user send or NULL
+     * @return array|null
+     */
+    public function getImage(): ?array {
+        return $this->image;
     }
 }
