@@ -212,6 +212,16 @@ class API {
         }
     }
 
+    public static function sendLocation(int|string $chat, float $lat, float $lon, int $type = 1) {
+        try {
+            self::methodExecutor("sendLocation", array('chat_id' => $chat, "latitude" => $lat, "longitude" => $lon), $type);
+        } catch (TelegramException $e) {
+            throw new TelegramException($e->getMessage(), $e->getCode(), $e);
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage(), $e->getCode(), $e);
+        }
+    }
+
     /**
      * Used to edit messages send earlier by bot
      * @param int $editid ID of message to edit
