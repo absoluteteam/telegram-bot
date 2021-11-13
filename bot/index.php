@@ -44,6 +44,7 @@ if (isset($update->message)) {
         } else {
             $keyboard = array(
                 "resize_keyboard" => true,
+                "one_time_keyboard" => true,
                 "keyboard" => array(
                     array(
                         array(
