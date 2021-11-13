@@ -260,6 +260,11 @@ class Message
     private ?string $text;
 
     /**
+     * @var object|null Object that represents contact sent to the bot
+     */
+    private ?object $contact;
+
+    /**
      * Constructs Message
      * @param object $msg Message object from Telegram callback API
      * @throws InvalidArgumentException If chat argument is absent in object
@@ -270,6 +275,7 @@ class Message
         $this->peer = $msg->chat->id;
         $this->uid = $msg->from->id;
         $this->text = $msg->text ?? NULL;
+        $this->contact = $msg->contact ?? NULL;
     }
 
     /**
@@ -302,5 +308,13 @@ class Message
      */
     public function getUptext(): string {
         return mb_strtoupper($this->text);
+    }
+
+    /**
+     * Get object of contact that user send or NULL
+     * @return object|null
+     */
+    public function getContact(): ?object {
+        return $this->contact;
     }
 }
