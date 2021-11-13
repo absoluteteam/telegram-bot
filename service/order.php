@@ -1,8 +1,10 @@
 <?php
 require_once 'database.php';
+require_once 'user.php';
 class Order {
     private int $id;
     private int $place_id;
+    private ?int $assigned;
     private array $acts = [NULL, NULL];
     private int $created;
     private ?int $completed;
@@ -15,6 +17,7 @@ class Order {
         $res = $q->fetch_assoc();
         $this->id = $id;
         $this->place_id = $res['place_id'];
+        $this->assigned = $res['assigned'];
         $this->acts = [$res['act1_id'], $res['act2_id']];
         $this->created = strtotime($res['created']);
         $this->completed = (is_null($res['completed'])) ? NULL : strtotime($res['completed']);
@@ -25,6 +28,21 @@ class Order {
     }
     public function getPlaceID(): int {
         return $this->place_id;
+    }
+    public function getAssigned(): ?int {
+        return $this->assigned;
+    }
+    public function setAssigned(User|NULL $user): void {
+        global $sql;
+        if (is_null($user)) {
+            $sql->query("UPDATE orders SET assigned = NULL WHERE order_id = '$this->id'");
+            $this->assigned = NULL;
+            $this->setStatus(0);
+        } else {
+            $this->assigned = $user->getUserID();
+            $sql->query("UPDATE orders SET assigned = '$this->assigned' WHERE order_id = '$this->id'");
+            $this->setStatus(1);
+        }
     }
     public function getAct(int $act): ?int {
         if ($act < 0 || $act > 1) throw new InvalidArgumentException("Act is out of bounds!");
