@@ -1,4 +1,8 @@
 <?php
+/*
+ * Database connection file
+ */
+
 date_default_timezone_set("Europe/Moscow");
 
 const DBUSER = 'root';

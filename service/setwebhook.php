@@ -1,3 +1,8 @@
+<?php
+/*
+ * Sets Telegram Webhook server address or retrieves information about it
+ */
+
 require 'requireall.php';
 
 $api = new API();
