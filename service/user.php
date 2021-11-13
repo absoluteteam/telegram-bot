@@ -32,6 +32,10 @@ class User {
         return $this->id;
     }
 
+    public function getUserID(): int {
+        return $this->user_id;
+    }
+
     public function getAccessLevel(): int {
         return $this->access;
     }
