@@ -25,7 +25,7 @@ class User {
         $this->id = $id;
         $this->user_id = $d['user_id'];
         $this->access = $d['access_level'];
-        $this->active_order = $d['active_order'];
+        $this->active_order = (is_null($d['active_order'])) ? NULL : new Order($d['active_order']);
         $this->active_status = $d['active_status'];
     }
 
