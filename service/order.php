@@ -6,11 +6,12 @@ class Order {
     private int $place_id;
     private ?int $assigned;
     private ?array $acts;
+    private ?string $actstring;
     private int $created;
     private ?int $completed;
     private int $status;
     private array $addresses;
-
+    private array $addrcover;
     function __construct(int $id) {
         global $sql;
         $q = $sql->query("SELECT * FROM orders WHERE order_id = '$id'");
@@ -19,6 +20,7 @@ class Order {
         $this->id = $id;
         $this->place_id = $res['place_id'];
         $this->assigned = $res['assigned'];
+        $this->actstring = $res['act_ids'];
         $this->acts = explode(",", $res['act_ids']);
         $this->created = strtotime($res['created']);
         $this->completed = (is_null($res['completed'])) ? NULL : strtotime($res['completed']);
@@ -27,9 +29,32 @@ class Order {
         $addrsplit = explode(";", $addr);
         $re = array();
         foreach ($addrsplit as $dataset) {
-            $re[] = explode(",", $dataset);
+            $re[] = explode(":", $dataset);
         }
         $this->addresses = $re;
+        $this->addrcover = explode(",", $res['addrcover']);
+    }
+    private function buildActOnString(): void {
+        $this->acts = explode(",", $this->actstring);
+    }
+    public function isEnroute(): int|false {
+        $cover = $this->addrcover;
+        for ($i = 0; $i < count($cover); $i++) {
+            if ($cover[$i] == 1) return $i;
+        }
+        return false;
+    }
+    public function updateCover(int $covernum, int $value): void {
+        global $sql;
+        if ($covernum < 0 || $covernum >= count($this->addrcover)) throw new InvalidArgumentException();
+        elseif ($value < 0 || $value > 2) throw new InvalidArgumentException();
+        $this->addrcover[$covernum] = $value;
+        $str = "";
+        foreach ($this->addrcover as $a) {
+            $str .= $a.",";
+        }
+        $str = mb_substr($str, 0, -1);
+        $sql->query("UPDATE orders SET addrcover = '$str' WHERE order_id = '$this->id'");
     }
     public function getID(): int {
         return $this->id;
@@ -52,15 +77,12 @@ class Order {
             $this->setStatus(1);
         }
     }
-    public function getAct(int $act): ?int {
-        if ($act < 0 || $act > count($this->acts)) throw new InvalidArgumentException("Act is out of bounds!");
-        return $this->acts[$act];
-    }
-    public function setAct(int $act, int $id): void {
+    public function appendAct(int $id): void {
         global $sql;
-        if ($act < 0 || $act > count($this->acts)) throw new InvalidArgumentException("Act is out of bounds!");
-        $sql->query("UPDATE orders SET act{$act}_id = '$id' WHERE order_id = '$this->id'");
-        $this->acts[$act] = $id;
+        $na = $this->actstring."{$id},";
+        $sql->query("UPDATE orders SET act_ids = '$na' WHERE order_id = '$this->id'");
+        $this->actstring = $na;
+        $this->buildActOnString();
     }
     public function getCreated(): int {
         return $this->created;
@@ -84,5 +106,29 @@ class Order {
     }
     public function getAddresses(): array {
         return $this->addresses;
+    }
+    public function getAddressesLimited(): array {
+        $addr = $this->addresses;
+        $na = array();
+        for ($i = 0; $i < count($addr); $i++) {
+            if ($this->addrcover[$i] != 2) {
+                $temp[0] = $addr[$i];
+                $temp[1] = $i;
+                $na[] = $temp;
+            }
+        }
+        return $na;
+    }
+    public function getAddressesParsed(): string {
+        $os = "";
+        $alim = $this->getAddressesLimited();
+        for ($i = 1; $i <= count($alim); $i++) {
+            $os .= "{$i}. {$alim[$i-1][0][0]}\n";
+        }
+        return $os;
+    }
+    public function finish(): void {
+        global $sql;
+        $sql->query("UPDATE orders SET completed = NOW(), status = 99, assigned = NULL WHERE order_id = '$this->id'");
     }
 }
