@@ -40,6 +40,7 @@ if (isset($update->message)) {
                 API::sendMessage($peer, "Пользователь не зарегистрирован в системе!");
                 exit;
             }
+            API::sendKeyboardedMessage($peer, "Вы успешно авторизовались!", json_encode(array("remove_keyboard" => true), JSON_UNESCAPED_UNICODE));
             API::sendMessage($peer, "Вы успешно авторизовались!");
         } else {
             $keyboard = array(
